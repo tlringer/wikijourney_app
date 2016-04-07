@@ -11,9 +11,12 @@
 /.idea/dictionaries
 /.idea/copyright/Apache.xml
 /.idea/misc.xml
+.idea/
 /build
 /captures
 gradle.properties
+gradlew
+gradlew.bat
 
 #built application files
 *.apk
