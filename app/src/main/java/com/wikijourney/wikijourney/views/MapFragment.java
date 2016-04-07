@@ -16,7 +16,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.MySSLSocketFactory;
@@ -26,7 +25,7 @@ import com.wikijourney.wikijourney.functions.CustomInfoWindow;
 import com.wikijourney.wikijourney.functions.Map;
 import com.wikijourney.wikijourney.functions.POI;
 import com.wikijourney.wikijourney.functions.UI;
-
+import cz.msebera.android.httpclient.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.api.IMapController;
@@ -40,8 +39,6 @@ import java.net.URLEncoder;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Locale;
-
-import cz.msebera.android.httpclient.Header;
 
 public class MapFragment extends Fragment {
 
@@ -169,8 +166,8 @@ public class MapFragment extends Fragment {
         };
 
         // Register the listener with the Location Manager to receive location updates
-//        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+        //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
     }
 
     @Override
