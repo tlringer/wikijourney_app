@@ -2,11 +2,9 @@ package com.wikijourney.wikijourney.views;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -16,6 +14,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.acg.lib.ACGResourceAccessException;
+import com.acg.lib.impl.UpdateLocationACG;
+import com.acg.lib.model.Location;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.MySSLSocketFactory;
@@ -52,9 +53,6 @@ public class MapFragment extends Fragment {
     private int paramMethod; //Could be around or place, depends on which button was clicked.
 
     //Now the variables we are going to use for the rest of the program.
-    private LocationManager locationManager;
-    private LocationListener locationListener;
-
     private MapView map;
     private GeoPoint userLocation;
     private boolean isUserLocatedOnce = false;
@@ -63,9 +61,16 @@ public class MapFragment extends Fragment {
     private Snackbar locatingSnackbar;
     private Snackbar downloadSnackbar;
 
+    private boolean isVisibleToUser = false;
+    private UpdateLocationACG updateLocationACG;
+
 
     public MapFragment() {
         // Required empty public constructor
+    }
+
+    public void setUpdateLocationACG(UpdateLocationACG updateLocationACG) {
+        this.updateLocationACG = updateLocationACG;
     }
 
     @Override
@@ -124,6 +129,12 @@ public class MapFragment extends Fragment {
             drawMap(paramPlace);
         }
 
+        setUserVisibleHint(true);
+
+        // Inflate ACG
+        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        transaction.add(R.id.update_location_acg_fragment_id, updateLocationACG).commit();
+
         return view;
     }
 
@@ -133,41 +144,6 @@ public class MapFragment extends Fragment {
             locatingSnackbar = Snackbar.make(getActivity().findViewById(R.id.fragment_container), R.string.snackbar_locating, Snackbar.LENGTH_INDEFINITE);
             locatingSnackbar.show();
         }
-
-        // Acquire a reference to the system Location Manager
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-//        Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-        // Define a listener that responds to location updates
-        locationListener = new LocationListener() {
-            public void onLocationChanged(Location location) {
-                // Once located, download the info from the API and display the map
-                if (locatingSnackbar != null) {
-                    locatingSnackbar.dismiss();
-                }
-                // TODO Temporary fix
-                // This stop the location updates, so the map doesn't always refresh
-                // locationManager.removeUpdates(locationListener);
-                drawCurrentLocation(location);
-                if (!isUserLocatedOnce) {
-                    isUserLocatedOnce = true;
-                    drawMap();
-                }
-            }
-
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-            }
-
-            public void onProviderEnabled(String provider) {
-            }
-
-            public void onProviderDisabled(String provider) {
-            }
-        };
-
-        // Register the listener with the Location Manager to receive location updates
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-        //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
     }
 
     @Override
@@ -179,28 +155,28 @@ public class MapFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         // Stop the Geolocation if the user leaves the MapFragment early
-        if (locationManager != null) {
-            locationManager.removeUpdates(locationListener);
-        }
+        updateLocationACG.onDetach();
         if (locatingSnackbar != null) {
             locatingSnackbar.dismiss();
         }
         if (downloadSnackbar != null) {
             downloadSnackbar.dismiss();
         }
+        setUserVisibleHint(false);
     }
 
-    private void drawCurrentLocation(Location location) {
+    private void drawCurrentLocation(double latitude, double longitude) {
 
         IMapController mapController = map.getController();
 
         // This starts the map at the desired point
-        userLocation = new GeoPoint(location);
+        userLocation = new GeoPoint(latitude, longitude);
         if (!isUserLocatedOnce) {
             mapController.setCenter(userLocation);
         }
 
         // Now we add a marker using osmBonusPack
+
         userLocationMarker.setPosition(userLocation);
         userLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         map.getOverlays().add(userLocationMarker);
@@ -352,10 +328,7 @@ public class MapFragment extends Fragment {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-                            Location placeLocation = new Location("test");
-                            placeLocation.setLatitude(placeLat);
-                            placeLocation.setLongitude(placeLong);
-                            drawCurrentLocation(placeLocation);
+                            drawCurrentLocation(placeLat, placeLong);
                         }
 
                         poiArrayList = POI.parseApiJson(response, paramMethod, context);
@@ -396,4 +369,31 @@ public class MapFragment extends Fragment {
         }
     }
 
+    public void drawCurrentLocation() {
+        if (isVisibleToUser) {
+            // Once located, download the info from the API and display the map
+            if (locatingSnackbar != null) {
+                locatingSnackbar.dismiss();
+            }
+
+            try {
+                Location location = updateLocationACG.getResource();
+
+                drawCurrentLocation(location.getLatitude(), location.getLongitude());
+                if (!isUserLocatedOnce) {
+                    isUserLocatedOnce = true;
+                    drawMap();
+                }
+            } catch (ACGResourceAccessException e) {
+                // ignore, since the original app doesn't care
+            }
+        }
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        this.isVisibleToUser = isVisibleToUser;
+        this.isUserLocatedOnce = false;
+    }
 }

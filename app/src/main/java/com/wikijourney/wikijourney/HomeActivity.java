@@ -1,8 +1,6 @@
 package com.wikijourney.wikijourney;
 
 import android.app.FragmentManager;
-import android.content.Context;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -15,17 +13,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-
-import com.wikijourney.wikijourney.views.AboutFragment;
-import com.wikijourney.wikijourney.views.HomeFragment;
-import com.wikijourney.wikijourney.views.MapFragment;
-import com.wikijourney.wikijourney.views.OptionsFragment;
-import com.wikijourney.wikijourney.views.PoiListFragment;
+import com.acg.lib.impl.UpdateLocationACG;
+import com.acg.lib.listeners.ACGActivity;
+import com.acg.lib.listeners.ACGListeners;
+import com.wikijourney.wikijourney.views.*;
 
 
-public class HomeActivity extends AppCompatActivity {
-
-    private LocationManager locationManager;
+public class HomeActivity extends AppCompatActivity implements ACGActivity {
 
     // Variables to use with the drawer
     private DrawerLayout mDrawerLayout;
@@ -33,14 +27,21 @@ public class HomeActivity extends AppCompatActivity {
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
     private NavigationView mDrawerView;
+    private UpdateLocationACG updateLocationACG;
+    private LocationACGListener locationACGListener = new LocationACGListener();
+
+    public UpdateLocationACG getUpdateLocationACG() {
+        return updateLocationACG;
+    }
+
+    public LocationACGListener getLocationACGListener() {
+        return locationACGListener;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
-        // To check if the user has enabled GPS
-        locationManager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
 
         Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -97,15 +98,21 @@ public class HomeActivity extends AppCompatActivity {
 
 
             // Create a new Fragment to be placed in the activity layout
-            HomeFragment firstFragment = new HomeFragment();
+
 
             // In case this activity was started with special instructions from an
             // Intent, pass the Intent's extras to the fragment as arguments
+            HomeFragment firstFragment = new HomeFragment();
             firstFragment.setArguments(getIntent().getExtras());
 
             // Add the fragment to the 'fragment_container' FrameLayout
             getFragmentManager().beginTransaction()
                     .add(R.id.fragment_container, firstFragment).commit();
+
+            // Add the updateLocationACG, and for now make updates impossible
+            updateLocationACG = new UpdateLocationACG();
+            updateLocationACG.setSmallestDisplacement(0);
+            updateLocationACG.setFastentestInterval(0);
         }
     }
 
@@ -194,8 +201,8 @@ public class HomeActivity extends AppCompatActivity {
             case 0:
                 if (findViewById(R.id.banner) != null) break; // If we are already at the HomeFragment, do nothing
                 // Else insert the fragment by replacing any existing fragment
-                HomeFragment homeFragment = new HomeFragment();
                 mTitle = getString(R.string.app_name);
+                HomeFragment homeFragment = new HomeFragment();
                 FragmentManager homeFragmentManager = getFragmentManager();
                 homeFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, homeFragment)
@@ -206,16 +213,19 @@ public class HomeActivity extends AppCompatActivity {
             case 1:
                 if (findViewById(R.id.map) != null) break; // If we are already at the MapFragment, do nothing
                 // Else insert the fragment by replacing any existing fragment
-                if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    MapFragment mapFragment = new MapFragment();
-                    mTitle = drawerStrings[i];
-                    FragmentManager mapFragmentManager = getFragmentManager();
-                    mapFragmentManager.beginTransaction()
-                            .replace(R.id.fragment_container, mapFragment)
-                            .addToBackStack(null)
-                            .commit();
-                    setTitle(mTitle);
-                }
+                mTitle = drawerStrings[i];
+                MapFragment mapFragment = new MapFragment();
+
+                // Set ACG and lsitener
+                mapFragment.setUpdateLocationACG(updateLocationACG);
+                locationACGListener.setMapFragment(mapFragment);
+
+                FragmentManager mapFragmentManager = getFragmentManager();
+                mapFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, mapFragment)
+                        .addToBackStack(null)
+                        .commit();
+                setTitle(mTitle);
                 break;
             case 2:
                 if (findViewById(R.id.poi_list) != null) break; // If we are already at the PoiListFragment, do nothing
@@ -280,5 +290,10 @@ public class HomeActivity extends AppCompatActivity {
         getFragmentManager().popBackStack();
         setTitle(getString(R.string.app_name));
         return super.onSupportNavigateUp();
+    }
+
+    @Override
+    public ACGListeners buildACGListeners() {
+        return new ACGListeners.Builder().withResourceReadyListener(updateLocationACG, locationACGListener).build();
     }
 }

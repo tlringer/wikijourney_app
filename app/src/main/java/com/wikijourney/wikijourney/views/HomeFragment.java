@@ -5,7 +5,6 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.res.Resources;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -14,7 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-
+import com.wikijourney.wikijourney.HomeActivity;
 import com.wikijourney.wikijourney.R;
 import com.wikijourney.wikijourney.functions.UI;
 import com.wikijourney.wikijourney.functions.Utils;
@@ -29,8 +28,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
             "com.wikijourney.wikijourney.METHOD" };
     public final static int METHOD_AROUND = 0;
     public final static int METHOD_PLACE = 1;
-
-    private LocationManager locationManager;
 
 
     public HomeFragment() {
@@ -56,14 +53,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         goButton.setOnClickListener(this);
         goAround.setOnClickListener(this);
 
-        // We get now the LocationManager, so we can display the PopUp if the user hasn't enabled it
-        locationManager = (LocationManager) getActivity().getSystemService( Context.LOCATION_SERVICE );
-
-        if (!locationManager.isProviderEnabled( LocationManager.GPS_PROVIDER )) {
-            UI.openPopUp(this.getActivity(), getResources().getString(R.string.error_activate_GPS_title), getResources().getString(R.string.error_activate_GPS));
-        }
-
-
         return view;
     }
 
@@ -81,7 +70,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         // Checking if the user has enabled both Internet access and Geolocation
         // TODO Should this be checked before, so we don't check it twice in each case?
-        boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         ConnectivityManager connMgr = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 
@@ -101,11 +89,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.go_around:
                 if (networkInfo != null && networkInfo.isConnected()) {
-                    if (gpsEnabled) {
-                        goMap(view.getRootView(), METHOD_AROUND);
-                    } else {
-                        UI.openPopUp(this.getActivity(), getResources().getString(R.string.error_activate_GPS_title), getResources().getString(R.string.error_activate_GPS));
-                    }
+                    goMap(view.getRootView(), METHOD_AROUND);
                     break;
                 } else {
                     UI.openPopUp(this.getActivity(), getResources().getString(R.string.error_activate_internet_title), getResources().getString(R.string.error_activate_internet));
@@ -159,18 +143,20 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
 
         // We change the Fragment
         // Create fragment and give it an argument specifying the options and the place if exists
-        MapFragment newFragment = new MapFragment();
-        newFragment.setArguments(args);
+        MapFragment mapFragment = new MapFragment();
+        HomeActivity activity = (HomeActivity) getActivity();
+        mapFragment.setUpdateLocationACG(activity.getUpdateLocationACG());
+        mapFragment.setArguments(args);
+        activity.getLocationACGListener().setMapFragment(mapFragment);
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
-        transaction.replace(R.id.fragment_container, newFragment);
+        transaction.replace(R.id.fragment_container, mapFragment);
         transaction.addToBackStack("MapFragmentFindingPoi");
 
         // Commit the transaction
         transaction.commit();
     }
-
 }
