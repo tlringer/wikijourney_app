@@ -1,0 +1,6 @@
+# Flow policy
+ACG("location") -> DISPLAY, INTERNET
+
+# Not implemented as ACGs yet, so we compose models
+USER_INPUT -> BUNDLE, INTERNET
+BUNDLE -> INTERNET
