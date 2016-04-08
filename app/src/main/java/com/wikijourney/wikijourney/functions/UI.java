@@ -2,8 +2,10 @@ package com.wikijourney.wikijourney.functions;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import sparta.checkers.quals.Sink;
+
+import static sparta.checkers.quals.FlowPermissionString.DISPLAY;
 
 /**
  * Contains all UI related functions<br/><br/>
@@ -17,7 +19,7 @@ public class UI {
      * @param popUpTitle The title of the pop-up
      * @param popUpMessage The message of the pop-up
      */
-    public static void openPopUp(Context context, String popUpTitle, String popUpMessage)
+    public static void openPopUp(Context context, @Sink(DISPLAY) String popUpTitle, @Sink(DISPLAY) String popUpMessage)
     {
         AlertDialog.Builder builder;
         AlertDialog dialog;

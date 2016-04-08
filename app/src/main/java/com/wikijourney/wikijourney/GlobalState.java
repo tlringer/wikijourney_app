@@ -1,8 +1,10 @@
 package com.wikijourney.wikijourney;
 
 import android.app.Application;
-
 import com.wikijourney.wikijourney.functions.POI;
+import sparta.checkers.quals.PolySinkR;
+import sparta.checkers.quals.PolySourceR;
+import sparta.checkers.quals.Source;
 
 import java.util.ArrayList;
 
@@ -13,9 +15,9 @@ import java.util.ArrayList;
  * Created by Thomas on 16/10/15.
  */
 public class GlobalState extends Application {
-    public static final String API_URL = "http://api.wikijourney.eu/?";
+    public static final @Source({}) String API_URL = "http://api.wikijourney.eu/?";
 
-    private ArrayList<POI> poiList;
+    private @PolySourceR @PolySinkR ArrayList</*@PolySourceR @PolySinkR*/ POI> poiList;
 
     @Override
     public void onCreate() {
@@ -25,11 +27,11 @@ public class GlobalState extends Application {
         poiList = new ArrayList<>();
     }
 
-    public ArrayList<POI> getPoiList() {
+    public @PolySourceR @PolySinkR ArrayList</*@PolySourceR @PolySinkR*/ POI> getPoiList() {
         return poiList;
     }
 
-    public void setPoiList(ArrayList<POI> poiList) {
+    public void setPoiList(@PolySourceR @PolySinkR ArrayList<POI> poiList) {
         this.poiList = poiList;
     }
 }

@@ -1,15 +1,12 @@
 package com.wikijourney.wikijourney.functions;
 
 import android.content.Context;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.wikijourney.wikijourney.GlobalState;
-import com.wikijourney.wikijourney.R;
-import com.wikijourney.wikijourney.views.HomeFragment;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
+import sparta.checkers.quals.*;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -18,19 +15,20 @@ import java.util.ArrayList;
  * This is the class used to store the information we get for each POI using the WikiJourney API.<br/>
  * Created by Thomas on 25/07/2015.
  */
+@PolyFlowReceiver
 public class POI {
 
     // We define every variable returned by the WikiJourney API, with the same name as in the JSON,
     // so Gson car work.
-    private double latitude;
-    private double longitude;
-    private String name;
-    private String sitelink;
-    private String type_name;
-    private int type_id;
-    private int id;
-    private String image_url;
-    private String description;
+    private @PolySourceR @PolySinkR double latitude;
+    private @PolySourceR @PolySinkR double longitude;
+    private @PolySourceR @PolySinkR String name;
+    private @PolySourceR @PolySinkR String sitelink;
+    private @PolySourceR @PolySinkR String type_name;
+    private @PolySourceR @PolySinkR int type_id;
+    private @PolySourceR @PolySinkR int id;
+    private @PolySourceR @PolySinkR String image_url;
+    private @PolySourceR @PolySinkR String description;
 
     /**
      * Public constructor, maybe needed by Gson
@@ -54,7 +52,7 @@ public class POI {
      * @param pContext A context of the app, so we can get the ApplicationContext and store the poiList
      * @return An ArrayList of POI
      */
-    public static ArrayList<POI> parseApiJson(JSONObject pServerResponsePOI, int method, Context pContext) {
+    public static @PolySource @PolySink ArrayList</*@PolySource @PolySink*/ POI> parseApiJson(@PolySource @PolySink JSONObject pServerResponsePOI, int method, Context pContext) {
         Gson mGson = new Gson();
         JSONArray poiInfoArray = null;
 

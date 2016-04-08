@@ -34,6 +34,8 @@ import org.osmdroid.bonuspack.overlays.Marker;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import sparta.checkers.quals.Sink;
+import sparta.checkers.quals.Source;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -41,35 +43,38 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import static sparta.checkers.quals.FlowPermissionString.DISPLAY;
+import static sparta.checkers.quals.FlowPermissionString.INTERNET;
+
 public class MapFragment extends Fragment {
 
     private GlobalState gs;
 
     // Variables for API
-    private String language = "en";
-    private double paramRange;
-    private int paramMaxPoi;
-    private String paramPlace;
-    private int paramMethod; //Could be around or place, depends on which button was clicked.
+    private @Sink(INTERNET) String language = "en";
+    private @Sink(INTERNET) double paramRange;
+    private @Sink(INTERNET) int paramMaxPoi;
+    private @Sink(INTERNET) String paramPlace;
+    private @Sink({}) int paramMethod; //Could be around or place, depends on which button was clicked.
 
     //Now the variables we are going to use for the rest of the program.
-    private MapView map;
-    private GeoPoint userLocation;
+    private @Sink(DISPLAY) MapView map;
+    private @Source("ACG(location)") GeoPoint userLocation;
     private boolean isUserLocatedOnce = false;
-    private Marker userLocationMarker;
+    private @Sink(DISPLAY) Marker userLocationMarker;
 
     private Snackbar locatingSnackbar;
     private Snackbar downloadSnackbar;
 
     private boolean isVisibleToUser = false;
-    private UpdateLocationACG updateLocationACG;
+    private @Source({}) UpdateLocationACG updateLocationACG;
 
 
     public MapFragment() {
         // Required empty public constructor
     }
 
-    public void setUpdateLocationACG(UpdateLocationACG updateLocationACG) {
+    public void setUpdateLocationACG(@Source({}) UpdateLocationACG updateLocationACG) {
         this.updateLocationACG = updateLocationACG;
     }
 
@@ -96,7 +101,8 @@ public class MapFragment extends Fragment {
 
         userLocationMarker = new Marker(map);
 
-        language = Locale.getDefault().getLanguage();
+        Locale defaultLocale = (/*@Sink(INTERNET)*/ Locale) Locale.getDefault();
+        language = defaultLocale.getLanguage();
 
         // We get the Bundle values
         Bundle args = getArguments();

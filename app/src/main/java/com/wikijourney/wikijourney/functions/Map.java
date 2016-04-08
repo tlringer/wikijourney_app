@@ -5,16 +5,17 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
-
 import com.wikijourney.wikijourney.R;
 import com.wikijourney.wikijourney.views.MapFragment;
-
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.overlays.Marker;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import sparta.checkers.quals.Sink;
 
 import java.util.ArrayList;
+
+import static sparta.checkers.quals.FlowPermissionString.DISPLAY;
 
 /**
  * Contains all Map related functions<br/><br/>
@@ -28,7 +29,7 @@ public class Map {
      * @param pMapFragment The Fragment containing the MapView
      * @param pPoiArrayList The ArrayList of POIs, once it has been handled by the parseApiJson method
      */
-    public static void drawPOI(MapFragment pMapFragment, ArrayList<POI> pPoiArrayList) {
+    public static void drawPOI(MapFragment pMapFragment, @Sink(DISPLAY) ArrayList</*@Sink(DISPLAY)*/ POI> pPoiArrayList) {
         MapView mMap = null;
         try {
             mMap = (MapView) pMapFragment.getActivity().findViewById(R.id.map);

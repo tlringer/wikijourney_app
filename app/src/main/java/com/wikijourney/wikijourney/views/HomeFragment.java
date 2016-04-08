@@ -17,6 +17,7 @@ import com.wikijourney.wikijourney.HomeActivity;
 import com.wikijourney.wikijourney.R;
 import com.wikijourney.wikijourney.functions.UI;
 import com.wikijourney.wikijourney.functions.Utils;
+import sparta.checkers.quals.Source;
 
 
 public class HomeFragment extends Fragment implements View.OnClickListener {
@@ -99,7 +100,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    private void goMap(View pView, int method) {
+    private void goMap(View pView, @Source({}) int method) {
         // We store the Resources to res, so we can get the actual value of the integers instead of their ID
         Resources res = getResources();
         // We get the options entered by the user, and store them in a Bundle
