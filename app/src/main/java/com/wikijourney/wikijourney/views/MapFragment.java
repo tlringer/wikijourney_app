@@ -34,6 +34,7 @@ import org.osmdroid.bonuspack.overlays.Marker;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Overlay;
 import sparta.checkers.quals.Sink;
 import sparta.checkers.quals.Source;
 
@@ -41,6 +42,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.KeyStore;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import static sparta.checkers.quals.FlowPermissionString.DISPLAY;
@@ -185,7 +187,8 @@ public class MapFragment extends Fragment {
 
         userLocationMarker.setPosition(userLocation);
         userLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        map.getOverlays().add(userLocationMarker);
+        @Sink(DISPLAY) List</*@Sink(DISPLAY)*/ Overlay> overlays = (/*@Sink(DISPLAY)*/ List</*@Sink(DISPLAY)*/ Overlay>) map.getOverlays();
+        overlays.add(userLocationMarker);
 
         // And we have to use this to refresh the map
         // map.invalidate();
@@ -265,10 +268,10 @@ public class MapFragment extends Fragment {
     private class DownloadWjApi {
         private final Context context;
         private final MapFragment mapFragment;
-        private String url;
+        private @Sink(INTERNET) String url;
         private final int paramMethod;
 
-        public DownloadWjApi(String url, int paramMethod, Context context, MapFragment mapFragment) {
+        public DownloadWjApi(@Sink(INTERNET) String url, int paramMethod, Context context, MapFragment mapFragment) {
             this.url = url;
             this.context = context;
             this.mapFragment = mapFragment;

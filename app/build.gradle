@@ -106,6 +106,7 @@ if (runSparta) {
                 options.compilerArgs = [
                         '-processor', 'sparta.checkers.FlowChecker',
                         '-AflowPolicy=flow/flow-policy',
+                        '-Astubs=stubs/osm.astub',
                         '-AprintErrorStack'
                 ]
                 options.bootClasspath = System.getProperty("sun.boot.class.path") + ":" + options.bootClasspath
