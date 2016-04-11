@@ -10,6 +10,11 @@ IMapController getController();
 
 package org.osmdroid.bonuspack.overlays;
 
+class OverlayWithIW extends Overlay {
+void getRelatedObject();
+void setSubDescription(@Sink(DISPLAY) String subDescription);
+}
+
 class Marker extends OverlayWithIW {
 Marker(MapView mapView);
 void setPosition(@Sink(DISPLAY) GeoPoint position);
@@ -21,6 +26,12 @@ void setTitle(@Sink(DISPLAY) String title);
 void setPosition(@Sink(DISPLAY) GeoPoint position);
 void setSnippet(@Sink(DISPLAY) String snippet);
 void setSubDescription(@Sink(DISPLAY) String subDescription);
+void setRelatedObject(Object relatedObject);
+}
+
+class MarkerInfoWindow extends BasicInfoWindow {
+MarkerInfoWindow(int layoutResId, MapView mapView);
+void onOpen(@Source(USER_INPUT) Object item);
 }
 
 package org.osmdroid.util;
@@ -71,4 +82,46 @@ package com.google.gson.reflect;
 class TypeToken<T> {
 TypeToken();
 Type getType();
+}
+
+package org.osmdroid.bonuspack.clustering;
+
+class RadiusMarkerClusterer extends MarkerClusterer {
+RadiusMarkerClusterer(Context ctx);
+}
+
+package org.apache.commons.lang3;
+
+class StringUtils {
+static boolean isEmpty(final CharSequence cs);
+}
+
+package com.squareup.picasso;
+
+class Picasso {
+static Picasso with(Context context);
+RequestCreator load(@Sink(INTERNET) String path);
+}
+
+package org.osmdroid.bonuspack.routing;
+
+class RoadManager {
+@PolyFlow
+Road getRoad(ArrayList<GeoPoint> var1);
+static Polyline buildRoadOverlay(@Sink(DISPLAY) Road road, Context context);
+}
+
+@PolyFlowReceiver
+class Road implements Parcelable {
+@PolySourceR @PolySinkR ArrayList<RoadNode> mNodes;
+String getLengthDurationText(int leg);
+String getLengthDurationText(double length, double duration);
+}
+
+@PolyFlowReceiver
+class RoadNode implements Parcelable {
+@PolySourceR @PolySinkR GeoPoint mLocation;
+@PolySourceR @PolySinkR String mInstructions;
+@PolySourceR @PolySinkR double mLength;
+@PolySourceR @PolySinkR double mDuration;
 }

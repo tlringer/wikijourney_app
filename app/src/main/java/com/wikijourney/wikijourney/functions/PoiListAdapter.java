@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.squareup.picasso.Picasso;
@@ -20,16 +19,20 @@ import com.wikijourney.wikijourney.GlobalState;
 import com.wikijourney.wikijourney.R;
 import com.wikijourney.wikijourney.views.PoiListFragment;
 import com.wikijourney.wikijourney.views.WebFragment;
-
+import cz.msebera.android.httpclient.Header;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import sparta.checkers.quals.Sink;
+import sparta.checkers.quals.Source;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import cz.msebera.android.httpclient.Header;
+import static sparta.checkers.quals.FlowPermissionString.*;
+import static sparta.checkers.quals.FlowPermissionString.WRITE_LOGS;
 
 /**
  * Adapter linking the POI RecyclerView to the CardViews
@@ -37,14 +40,14 @@ import cz.msebera.android.httpclient.Header;
  */
 public class PoiListAdapter extends RecyclerView.Adapter<PoiListAdapter.ViewHolder> {
 
-    private final ArrayList<POI> mPoiList;
-    private final Context context;
-    private final PoiListFragment mPoiListFragment;
-    private final GlobalState gs;
+    private final @Sink({DISPLAY, BUNDLE}) ArrayList</*@Sink({DISPLAY, BUNDLE})*/ POI> mPoiList;
+    private final @Sink({}) Context context;
+    private final @Sink({}) PoiListFragment mPoiListFragment;
+    private final @Source(INTERNET) GlobalState gs;
 
     // This can be used to retrieve the first lines, or summary, of a Wikipedia article
     private String WP_URL_PREFIX = "https://";
-    private String language;
+    private @Sink("INTERNET(*.wikipedia.org)") String language;
     private String WP_URL_TEXT = ".wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&titles=";
     public final static String EXTRA_URL = "com.wikijourney.wikijourney.POI_URL";
 
@@ -74,12 +77,12 @@ public class PoiListAdapter extends RecyclerView.Adapter<PoiListAdapter.ViewHold
      * @param pContext The context of the View. It is needed for Picasso to display the WP article image.
      * @param poiListFragment The Fragment containing the PoiList. It is needed to change Fragments with the FragmentManager.
      */
-    public PoiListAdapter(Context pContext, PoiListFragment poiListFragment) {
+    public PoiListAdapter(@Sink({}) Context pContext, @Sink({}) PoiListFragment poiListFragment) {
         this.context = pContext;
         this.mPoiListFragment = poiListFragment;
         this.gs = ((GlobalState) pContext.getApplicationContext());
-        this.mPoiList = gs.getPoiList();
-        this.language = Locale.getDefault().getLanguage();
+        this.mPoiList = (/*@Sink({DISPLAY, BUNDLE})*/ ArrayList</*@Sink({DISPLAY, BUNDLE})*/ POI>) ((/*@Source(INTERNET)*/ GlobalState) gs).getPoiList();
+        this.language = ((/*@Sink("INTERNET(*.wikipedia.org)")*/ Locale) Locale.getDefault()).getLanguage();
     }
 
     // Create new views (invoked by the layout manager)
@@ -106,7 +109,7 @@ public class PoiListAdapter extends RecyclerView.Adapter<PoiListAdapter.ViewHold
         String mPoiDescription = mPoiList.get(position).getDescription();
 
         // We add a Listener, so that a tap on the card opens a WebView to the WP page
-        if (mPoiSitelink != null && !"".equals(mPoiSitelink)) {
+        if (mPoiSitelink != null && !StringUtils.isEmpty(mPoiSitelink)) {
             holder.mReadMoreButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -128,7 +131,7 @@ public class PoiListAdapter extends RecyclerView.Adapter<PoiListAdapter.ViewHold
 
             if (mPoiDescription == null) {
                 downloadWikipediaExtract(holder, poiName, position);
-            } else if ("".equals(mPoiDescription)) {
+            } else if (StringUtils.isEmpty(mPoiDescription)) {
                 holder.mPoiDescription.setVisibility(View.GONE);
             } else {
                 holder.mPoiDescription.setVisibility(View.VISIBLE);
@@ -138,7 +141,7 @@ public class PoiListAdapter extends RecyclerView.Adapter<PoiListAdapter.ViewHold
 
         holder.mPoiPicture.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.logo_cut));
         // We use Picasso to download the Wikipedia article image
-        if (mPoiImageUrl != null && !"".equals(mPoiImageUrl)) {
+        if (mPoiImageUrl != null && !StringUtils.isEmpty(mPoiImageUrl)) {
             displayArticleImage(holder, mPoiImageUrl);
         }
 
@@ -156,29 +159,31 @@ public class PoiListAdapter extends RecyclerView.Adapter<PoiListAdapter.ViewHold
         }
         client.get(context, url, new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+            public void onSuccess(@Source(INTERNET) int statusCode, @Source(INTERNET) Header /*@Source(INTERNET)*/ [] headers, @Source(INTERNET) JSONObject response) {
                 String page_id;
                 String extract;
                 try {
                     page_id = response.getJSONObject("query").getJSONObject("pages").names().getString(0);
                     extract = response.getJSONObject("query").getJSONObject("pages").getJSONObject(page_id).getString("extract");
-                    if (!"".equals(extract)) {
+                    if (!StringUtils.isEmpty(extract)) {
                         holder.mPoiDescription.setVisibility(View.VISIBLE);
                         holder.mPoiDescription.setText(extract);
                     }
-                    gs.getPoiList().get(position).setDescription(extract);
+                    @Sink({DISPLAY, BUNDLE}) ArrayList</*@Sink({DISPLAY, BUNDLE})*/ POI> poiList =
+                            (/*@Sink({DISPLAY, BUNDLE})*/ ArrayList</*@Sink({DISPLAY, BUNDLE})*/ POI>) ((/*@Source(INTERNET)*/ GlobalState) gs).getPoiList();
+                    poiList.get(position).setDescription(extract);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
 
             @Override
-            public void onProgress(long bytesWritten, long totalSize) {
+            public void onProgress(@Sink(WRITE_LOGS) long bytesWritten, @Sink(WRITE_LOGS) long totalSize) {
                 Log.d("progress", "Downloading " + bytesWritten + " of " + totalSize);
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+            public void onFailure(@Source(INTERNET) int statusCode, @Source(INTERNET) Header /*@Source(INTERNET)*/ [] headers, Throwable throwable, @Source(INTERNET) JSONObject errorResponse) {
                 try {
                     Log.e("Error", errorResponse.toString());
                 } catch (Exception e) {
@@ -187,7 +192,7 @@ public class PoiListAdapter extends RecyclerView.Adapter<PoiListAdapter.ViewHold
             }
 
             @Override
-            public void onRetry(int retryNo) {
+            public void onRetry(@Sink(WRITE_LOGS) int retryNo) {
                 Log.e("Error", "Retrying for the " + retryNo + " time");
                 super.onRetry(retryNo);
             }

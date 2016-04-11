@@ -3,9 +3,7 @@ package com.wikijourney.wikijourney.functions;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
-
 import com.wikijourney.wikijourney.R;
-
 import org.osmdroid.bonuspack.overlays.Marker;
 import org.osmdroid.bonuspack.overlays.Polyline;
 import org.osmdroid.bonuspack.routing.Road;
@@ -13,14 +11,18 @@ import org.osmdroid.bonuspack.routing.RoadManager;
 import org.osmdroid.bonuspack.routing.RoadNode;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import sparta.checkers.quals.Sink;
+import sparta.checkers.quals.Source;
 
 import java.util.ArrayList;
 
+import static sparta.checkers.quals.FlowPermissionString.DISPLAY;
+
 public class Routing {
 
-    private final Context context;
+    private final @Source({}) Context context;
 
-    public Routing(Context pContext) {
+    public Routing(@Source({}) Context pContext) {
         context = pContext;
     }
 
@@ -52,7 +54,7 @@ public class Routing {
      * @param arrayList The list of GeoPoints to calculate the itinireray between
      * @return The Road between all points
      */
-    public Road buildRoute(RoadManager roadManager, ArrayList<GeoPoint> arrayList) {
+    public Road buildRoute(@Source({}) RoadManager roadManager, @Source({}) ArrayList</* @Source({})*/ GeoPoint> arrayList) {
         Road route = roadManager.getRoad(arrayList);
         return route;
     }
@@ -63,7 +65,7 @@ public class Routing {
      * @param map The MapView to draw the Road on
      * @param context Needed to draw the Road, should be the Activity containing the MapView
      */
-    public void drawPolyline(Road route, MapView map, Context context) {
+    public void drawPolyline(@Sink(DISPLAY) Road route, @Source({}) MapView map, @Source({}) Context context) {
         Polyline roadOverlay = RoadManager.buildRoadOverlay(route, context);
         map.getOverlays().add(roadOverlay);
         map.invalidate();
@@ -74,7 +76,7 @@ public class Routing {
      * @param road The Road we are going to add the WayPoints to
      * @param map The MapView on which the WayPoints will be added
      */
-    public void drawRoadWithWaypoints(Road road, MapView map) {
+    public void drawRoadWithWaypoints(@Source({}) Road road, MapView map) {
         /* TODO add support for even more directions markers type */
         Drawable nodeIcon = ContextCompat.getDrawable(context, R.drawable.marker_node);
         for (int i = 0; i < road.mNodes.size(); i++) {

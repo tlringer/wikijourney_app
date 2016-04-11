@@ -4,6 +4,7 @@ import android.content.Context;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.wikijourney.wikijourney.GlobalState;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import sparta.checkers.quals.*;
@@ -76,8 +77,7 @@ public class POI {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        @PolySource @PolySink String empty = (/*@PolySource @PolySink*/ String) "";
-        if (responseString != null && !empty.equals(responseString)) {
+        if (responseString != null && !StringUtils.isEmpty(responseString)) {
             mPoiArrayList = mGson.fromJson(responseString, arrayPoiType);
         } else {
             mPoiArrayList = null;
@@ -106,7 +106,8 @@ public class POI {
     }
 
     public String getName() {
-        return Utils.capitalizeFirstLetter(name);
+        @PolySourceR @PolySinkR String capitalizedName = Utils.capitalizeFirstLetter(name);
+        return (/*@PolySourceR @PolySinkR*/ String) capitalizedName;
     }
 
     public void setName(String name) {

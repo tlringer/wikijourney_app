@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import sparta.checkers.quals.PolyFlow;
 
 /**
  * Class containing functions for everything...<br/>
@@ -16,6 +17,7 @@ public class Utils {
      * @param s The String to capitalize
      * @return The capitalized String
      */
+    @PolyFlow
     public static String capitalizeFirstLetter(String s) {
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }

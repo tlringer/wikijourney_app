@@ -15,6 +15,7 @@ import android.webkit.WebViewClient;
 import com.wikijourney.wikijourney.R;
 import com.wikijourney.wikijourney.functions.PoiListAdapter;
 import sparta.checkers.quals.Sink;
+import sparta.checkers.quals.Source;
 
 import static sparta.checkers.quals.FlowPermissionString.INTERNET;
 
@@ -64,12 +65,13 @@ public class WebFragment extends Fragment {
     private class MyWebViewClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            if (Uri.parse(url).getHost().endsWith("wikipedia.org")) {
+            @Source({}) Uri uri = (/*@Source({})*/ Uri) Uri.parse((url));
+            if (uri.getHost().endsWith("wikipedia.org")) {
                 // This is Wikipedia, so do not override; let the WebView load the page
                 return false;
             }
             // Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             startActivity(intent);
             return true;
         }
