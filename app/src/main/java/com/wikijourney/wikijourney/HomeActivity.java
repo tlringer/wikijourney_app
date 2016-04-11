@@ -17,6 +17,9 @@ import com.acg.lib.impl.UpdateLocationACG;
 import com.acg.lib.listeners.ACGActivity;
 import com.acg.lib.listeners.ACGListeners;
 import com.wikijourney.wikijourney.views.*;
+import sparta.checkers.quals.Sink;
+
+import static sparta.checkers.quals.FlowPermissionString.DISPLAY;
 
 
 public class HomeActivity extends AppCompatActivity implements ACGActivity {
@@ -270,7 +273,7 @@ public class HomeActivity extends AppCompatActivity implements ACGActivity {
     }
 
     @Override
-    public void setTitle(CharSequence title) {
+    public void setTitle(@Sink(DISPLAY) CharSequence title) {
         getSupportActionBar().setTitle(title);
     }
 

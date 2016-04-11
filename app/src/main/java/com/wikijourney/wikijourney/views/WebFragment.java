@@ -12,9 +12,11 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-
 import com.wikijourney.wikijourney.R;
 import com.wikijourney.wikijourney.functions.PoiListAdapter;
+import sparta.checkers.quals.Sink;
+
+import static sparta.checkers.quals.FlowPermissionString.INTERNET;
 
 /**
  *
@@ -39,7 +41,7 @@ public class WebFragment extends Fragment {
         // TODO Change the layout padding so the WebView takes the whole space
         // TODO Add checks so the user can only go to Wikipedia pages
         Bundle args = getArguments();
-        String url = args.getString(PoiListAdapter.EXTRA_URL);
+        @Sink(INTERNET) String url = args.getString(PoiListAdapter.EXTRA_URL);
         WebView myWebView = (WebView) view.findViewById(R.id.webView);
         myWebView.setWebViewClient(new MyWebViewClient());
         myWebView.setWebChromeClient(new WebChromeClient());

@@ -66,15 +66,18 @@ public class POI {
 
         // We create a local ArrayList of POI, to retrieve its Type, so Gson knows how to store the
         // JSON in the ArrayList<POI>
-        ArrayList<POI> mPoiArrayList = new ArrayList<>();
+        @PolySource @PolySink ArrayList</*@PolySource @PolySink*/ POI> mPoiArrayList =
+                (/*@PolySource @PolySink*/ ArrayList</*@PolySource @PolySink*/ POI>) new ArrayList<POI>();
+
         Type arrayPoiType = new TypeToken<ArrayList<POI>>(){}.getType();
-        String responseString = null;
+        @PolySource @PolySink String responseString = null;
         try {
             responseString = poiInfoArray.toString();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (responseString != null && !"".equals(responseString)) {
+        @PolySource @PolySink String empty = (/*@PolySource @PolySink*/ String) "";
+        if (responseString != null && !empty.equals(responseString)) {
             mPoiArrayList = mGson.fromJson(responseString, arrayPoiType);
         } else {
             mPoiArrayList = null;

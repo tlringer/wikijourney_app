@@ -47,16 +47,17 @@ import java.util.Locale;
 
 import static sparta.checkers.quals.FlowPermissionString.DISPLAY;
 import static sparta.checkers.quals.FlowPermissionString.INTERNET;
+import static sparta.checkers.quals.FlowPermissionString.WRITE_LOGS;
 
 public class MapFragment extends Fragment {
 
     private GlobalState gs;
 
     // Variables for API
-    private @Sink(INTERNET) String language = "en";
-    private @Sink(INTERNET) double paramRange;
-    private @Sink(INTERNET) int paramMaxPoi;
-    private @Sink(INTERNET) String paramPlace;
+    private @Sink("INTERNET(api.wikijourney.eu)") String language = "en";
+    private @Sink("INTERNET(api.wikijourney.eu)") double paramRange;
+    private @Sink("INTERNET(api.wikijourney.eu)") int paramMaxPoi;
+    private @Sink("INTERNET(api.wikijourney.eu)") String paramPlace;
     private @Sink({}) int paramMethod; //Could be around or place, depends on which button was clicked.
 
     //Now the variables we are going to use for the rest of the program.
@@ -68,7 +69,7 @@ public class MapFragment extends Fragment {
     private Snackbar locatingSnackbar;
     private Snackbar downloadSnackbar;
 
-    private boolean isVisibleToUser = false;
+    private @Sink({}) boolean isVisibleToUser = false;
     private @Source({}) UpdateLocationACG updateLocationACG;
 
 
@@ -103,7 +104,7 @@ public class MapFragment extends Fragment {
 
         userLocationMarker = new Marker(map);
 
-        Locale defaultLocale = (/*@Sink(INTERNET)*/ Locale) Locale.getDefault();
+        Locale defaultLocale = (/*@Sink("INTERNET(api.wikijourney.eu)")*/ Locale) Locale.getDefault();
         language = defaultLocale.getLanguage();
 
         // We get the Bundle values
@@ -238,7 +239,7 @@ public class MapFragment extends Fragment {
         String url;
         String encodedPlace = "";
         try { // https://stackoverflow.com/a/10786112/3641865
-            encodedPlace = URLEncoder.encode(paramPlace, "UTF-8");
+            encodedPlace = (/*@Sink("INTERNET(api.wikijourney.eu)")*/ String) URLEncoder.encode(paramPlace, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -266,12 +267,12 @@ public class MapFragment extends Fragment {
     }
 
     private class DownloadWjApi {
-        private final Context context;
-        private final MapFragment mapFragment;
-        private @Sink(INTERNET) String url;
-        private final int paramMethod;
+        private @Sink({}) final Context context;
+        private @Sink({}) final MapFragment mapFragment;
+        private @Sink("INTERNET(api.wikijourney.eu)") String url;
+        private @Sink({}) final int paramMethod;
 
-        public DownloadWjApi(@Sink(INTERNET) String url, int paramMethod, Context context, MapFragment mapFragment) {
+        public DownloadWjApi(@Sink("INTERNET(api.wikijourney.eu)") String url, int paramMethod, @Sink({}) Context context, @Sink({}) MapFragment mapFragment) {
             this.url = url;
             this.context = context;
             this.mapFragment = mapFragment;
@@ -294,11 +295,11 @@ public class MapFragment extends Fragment {
             client.setTimeout(30_000); // Set timeout to 30s, the server may be slow...
             client.get(context, url, new JsonHttpResponseHandler() {
                 @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                public void onSuccess(@Source(INTERNET) int statusCode, @Source(INTERNET) Header /*@Source(INTERNET)*/ [] headers, @Source(INTERNET) JSONObject response) {
                     if (downloadSnackbar != null) {
                         downloadSnackbar.dismiss();
                     }
-                    ArrayList<POI> poiArrayList;
+                    @Sink(DISPLAY) ArrayList</*@Sink(DISPLAY)*/ POI> poiArrayList;
                     boolean errorOccurred = true;
                     String errorMessage = null;
                     boolean isPoiAround = false;
@@ -340,7 +341,7 @@ public class MapFragment extends Fragment {
                             drawCurrentLocation(placeLat, placeLong);
                         }
 
-                        poiArrayList = POI.parseApiJson(response, paramMethod, context);
+                        poiArrayList = (/*@Sink(DISPLAY)*/ ArrayList</*@Sink(DISPLAY)*/ POI>) POI.parseApiJson(response, paramMethod, context);
                         if (poiArrayList != null && poiArrayList.size() != 0) {
                             Map.drawPOI(mapFragment, poiArrayList);
                         } else {
@@ -350,12 +351,12 @@ public class MapFragment extends Fragment {
                 }
 
                 @Override
-                public void onProgress(long bytesWritten, long totalSize) {
+                public void onProgress(@Sink(WRITE_LOGS) long bytesWritten, @Sink(WRITE_LOGS) long totalSize) {
                     Log.d("progress", "Downloading " + bytesWritten + " of " + totalSize);
                 }
 
                 @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                public void onFailure(@Source(INTERNET) int statusCode, @Source(INTERNET) Header /*@Source(INTERNET)*/ [] headers, Throwable throwable, @Source(INTERNET) JSONObject errorResponse) {
                     try {
                         Log.e("Error", errorResponse.toString());
                     } catch (Exception e) {
@@ -370,7 +371,7 @@ public class MapFragment extends Fragment {
                 }
 
                 @Override
-                public void onRetry(int retryNo) {
+                public void onRetry(@Sink(WRITE_LOGS) int retryNo) {
                     Log.e("Error", "Retrying for the " + retryNo + " time");
                     super.onRetry(retryNo);
                 }
