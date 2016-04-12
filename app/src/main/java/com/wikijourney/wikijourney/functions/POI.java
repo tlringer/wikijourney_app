@@ -12,6 +12,8 @@ import sparta.checkers.quals.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
+import static sparta.checkers.quals.FlowPermissionString.DISPLAY;
+
 /**
  * This is the class used to store the information we get for each POI using the WikiJourney API.<br/>
  * Created by Thomas on 25/07/2015.
@@ -23,7 +25,7 @@ public class POI {
     // so Gson car work.
     private @PolySourceR @PolySinkR double latitude;
     private @PolySourceR @PolySinkR double longitude;
-    private @PolySourceR @PolySinkR String name;
+    private @Sink({"INTERNET(*.wikipedia.org)", DISPLAY}) String name;
     private @PolySourceR @PolySinkR String sitelink;
     private @PolySourceR @PolySinkR String type_name;
     private @PolySourceR @PolySinkR int type_id;
@@ -34,7 +36,7 @@ public class POI {
     /**
      * Public constructor, maybe needed by Gson
      */
-    public POI(double latitude, double longitude, String name, String sitelink, String type_name, int type_id, int id, String image_url) {
+    public POI(double latitude, double longitude, @Sink({"INTERNET(*.wikipedia.org)", DISPLAY}) String name, String sitelink, String type_name, int type_id, int id, String image_url) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.name = name;
@@ -105,12 +107,12 @@ public class POI {
         this.longitude = longitude;
     }
 
-    public String getName() {
-        @PolySourceR @PolySinkR String capitalizedName = Utils.capitalizeFirstLetter(name);
-        return (/*@PolySourceR @PolySinkR*/ String) capitalizedName;
+    public @Sink({"INTERNET(*.wikipedia.org)", DISPLAY}) String getName() {
+        @Sink({"INTERNET(*.wikipedia.org)", DISPLAY}) String capitalizedName = (/*@Sink({"INTERNET(*.wikipedia.org)", DISPLAY})*/ String) Utils.capitalizeFirstLetter(name);
+        return capitalizedName;
     }
 
-    public void setName(String name) {
+    public void setName(@Sink({"INTERNET(*.wikipedia.org)", DISPLAY}) String name) {
         this.name = name;
     }
 
