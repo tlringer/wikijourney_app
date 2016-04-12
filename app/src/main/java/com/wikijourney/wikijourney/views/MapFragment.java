@@ -47,7 +47,6 @@ import java.util.Locale;
 
 import static sparta.checkers.quals.FlowPermissionString.DISPLAY;
 import static sparta.checkers.quals.FlowPermissionString.INTERNET;
-import static sparta.checkers.quals.FlowPermissionString.WRITE_LOGS;
 
 public class MapFragment extends Fragment {
 
@@ -295,7 +294,9 @@ public class MapFragment extends Fragment {
             client.setTimeout(30_000); // Set timeout to 30s, the server may be slow...
             client.get(context, url, new JsonHttpResponseHandler() {
                 @Override
-                public void onSuccess(@Source(INTERNET) int statusCode, @Source(INTERNET) Header /*@Source(INTERNET)*/ [] headers, @Source(INTERNET) JSONObject response) {
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    @Source(INTERNET) JSONObject responseWithSource = (/*@Source(INTERNET)*/ JSONObject) response;
+
                     if (downloadSnackbar != null) {
                         downloadSnackbar.dismiss();
                     }
@@ -305,14 +306,14 @@ public class MapFragment extends Fragment {
                     boolean isPoiAround = false;
                     // We check if the server answered correctly and if there is any POI around
                     try {
-                        errorOccurred = response.getJSONObject("err_check").getBoolean("value");
+                        errorOccurred = responseWithSource.getJSONObject("err_check").getBoolean("value");
                         if (errorOccurred) {
-                            errorMessage = response.getJSONObject("err_check").getString("err_msg");
+                            errorMessage = responseWithSource.getJSONObject("err_check").getString("err_msg");
                         } else {
                             errorOccurred = false;
                         }
 
-                        if (response.getJSONObject("poi").getInt("nb_poi") == 0) {
+                        if (responseWithSource.getJSONObject("poi").getInt("nb_poi") == 0) {
                             isPoiAround = false;
                         } else {
                             isPoiAround = true;
@@ -332,7 +333,7 @@ public class MapFragment extends Fragment {
                             double placeLat = 0;
                             double placeLong = 0;
                             try {
-                                placeLocationJson = response.getJSONObject("user_location");
+                                placeLocationJson = responseWithSource.getJSONObject("user_location");
                                 placeLat = placeLocationJson.getDouble("latitude");
                                 placeLong = placeLocationJson.getDouble("longitude");
                             } catch (JSONException e) {
@@ -341,7 +342,7 @@ public class MapFragment extends Fragment {
                             drawCurrentLocation(placeLat, placeLong);
                         }
 
-                        poiArrayList = (/*@Sink(DISPLAY)*/ ArrayList</*@Sink(DISPLAY)*/ POI>) POI.parseApiJson(response, paramMethod, context);
+                        poiArrayList = (/*@Sink(DISPLAY)*/ ArrayList</*@Sink(DISPLAY)*/ POI>) POI.parseApiJson(responseWithSource, paramMethod, context);
                         if (poiArrayList != null && poiArrayList.size() != 0) {
                             Map.drawPOI(mapFragment, poiArrayList);
                         } else {
@@ -351,14 +352,16 @@ public class MapFragment extends Fragment {
                 }
 
                 @Override
-                public void onProgress(@Sink(WRITE_LOGS) long bytesWritten, @Sink(WRITE_LOGS) long totalSize) {
-                    Log.d("progress", "Downloading " + bytesWritten + " of " + totalSize);
+                public void onProgress(long bytesWritten, long totalSize) {
+                    Log.d("progress", "Downloading " + (/*@Sink("WRITE_LOGS")*/ long) bytesWritten + " of " + (/*@Sink("WRITE_LOGS")*/ long) totalSize);
                 }
 
                 @Override
-                public void onFailure(@Source(INTERNET) int statusCode, @Source(INTERNET) Header /*@Source(INTERNET)*/ [] headers, Throwable throwable, @Source(INTERNET) JSONObject errorResponse) {
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                    @Source(INTERNET) JSONObject errorResponseWithSource = (/*@Source(INTERNET)*/ JSONObject) errorResponse;
+
                     try {
-                        Log.e("Error", errorResponse.toString());
+                        Log.e("Error", errorResponseWithSource.toString());
                     } catch (Exception e) {
                         Log.e("Error", "Error while downloading the API response");
                     }
@@ -371,8 +374,8 @@ public class MapFragment extends Fragment {
                 }
 
                 @Override
-                public void onRetry(@Sink(WRITE_LOGS) int retryNo) {
-                    Log.e("Error", "Retrying for the " + retryNo + " time");
+                public void onRetry(int retryNo) {
+                    Log.e("Error", "Retrying for the " + (/*@Sink("WRITE_LOGS")*/ int) retryNo + " time");
                     super.onRetry(retryNo);
                 }
             });

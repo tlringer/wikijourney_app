@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import static sparta.checkers.quals.FlowPermissionString.*;
-import static sparta.checkers.quals.FlowPermissionString.WRITE_LOGS;
 
 /**
  * Adapter linking the POI RecyclerView to the CardViews
@@ -159,12 +158,14 @@ public class PoiListAdapter extends RecyclerView.Adapter<PoiListAdapter.ViewHold
         }
         client.get(context, url, new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(@Source(INTERNET) int statusCode, @Source(INTERNET) Header /*@Source(INTERNET)*/ [] headers, @Source(INTERNET) JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                @Source(INTERNET) JSONObject responseWithSource = (/*@Source(INTERNET)*/ JSONObject) response;
+
                 String page_id;
                 String extract;
                 try {
-                    page_id = response.getJSONObject("query").getJSONObject("pages").names().getString(0);
-                    extract = response.getJSONObject("query").getJSONObject("pages").getJSONObject(page_id).getString("extract");
+                    page_id = responseWithSource.getJSONObject("query").getJSONObject("pages").names().getString(0);
+                    extract = responseWithSource.getJSONObject("query").getJSONObject("pages").getJSONObject(page_id).getString("extract");
                     if (!StringUtils.isEmpty(extract)) {
                         holder.mPoiDescription.setVisibility(View.VISIBLE);
                         holder.mPoiDescription.setText(extract);
@@ -178,22 +179,24 @@ public class PoiListAdapter extends RecyclerView.Adapter<PoiListAdapter.ViewHold
             }
 
             @Override
-            public void onProgress(@Sink(WRITE_LOGS) long bytesWritten, @Sink(WRITE_LOGS) long totalSize) {
-                Log.d("progress", "Downloading " + bytesWritten + " of " + totalSize);
+            public void onProgress(long bytesWritten, long totalSize) {
+                Log.d("progress", "Downloading " + (/*@Sink("WRITE_LOGS")*/ long) bytesWritten + " of " + (/*@Sink("WRITE_LOGS")*/ long) totalSize);
             }
 
             @Override
-            public void onFailure(@Source(INTERNET) int statusCode, @Source(INTERNET) Header /*@Source(INTERNET)*/ [] headers, Throwable throwable, @Source(INTERNET) JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                @Source(INTERNET) JSONObject errorResponseWithSource = (/*@Source(INTERNET)*/ JSONObject) errorResponse;
+
                 try {
-                    Log.e("Error", errorResponse.toString());
+                    Log.e("Error", errorResponseWithSource.toString());
                 } catch (Exception e) {
                     Log.e("Error", "Error while downloading the Wikipedia extract");
                 }
             }
 
             @Override
-            public void onRetry(@Sink(WRITE_LOGS) int retryNo) {
-                Log.e("Error", "Retrying for the " + retryNo + " time");
+            public void onRetry(int retryNo) {
+                Log.e("Error", "Retrying for the " + (/*@Sink("WRITE_LOGS")*/ int) retryNo + " time");
                 super.onRetry(retryNo);
             }
         });
